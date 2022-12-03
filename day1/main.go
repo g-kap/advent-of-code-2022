@@ -1,11 +1,11 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"log"
-	"os"
 	"strconv"
+
+	"github.com/g-kap/advent-of-code-2022/common"
 )
 
 type elfCalories int64
@@ -34,13 +34,8 @@ func (e *TopElfs) compareAndSwapWithWeakest(elf elfCalories) {
 }
 
 func main() {
-	f, err := os.Open("./input.txt")
-	if err != nil {
-		log.Fatalf("can not open ./input.txt")
-		return
-	}
-	defer f.Close()
-	sc := bufio.NewScanner(f)
+	sc, closeFile := common.FileScanner("./day1/input.txt")
+	defer closeFile()
 	var (
 		lastElf elfCalories
 		topElfs TopElfs

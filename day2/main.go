@@ -1,12 +1,12 @@
 package main
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
 	"log"
-	"os"
 	"strings"
+
+	"github.com/g-kap/advent-of-code-2022/common"
 )
 
 type Sign int
@@ -108,13 +108,8 @@ func selectSign(opSign Sign, result CombatResult) (Sign, error) {
 }
 
 func main() {
-	f, err := os.Open("./input.txt")
-	if err != nil {
-		log.Fatalf("can not open ./input.txt")
-		return
-	}
-	defer f.Close()
-	sc := bufio.NewScanner(f)
+	sc, closeFile := common.FileScanner("./day2/input.txt")
+	defer closeFile()
 	var playerTotal int
 	for sc.Scan() {
 		comb, err := parseCombination(sc.Text(), true)

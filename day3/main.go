@@ -1,11 +1,10 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"log"
-	"os"
 	"strings"
+
+	"github.com/g-kap/advent-of-code-2022/common"
 )
 
 func weight(r rune) int {
@@ -41,13 +40,8 @@ func commonRune(lines []string) rune {
 }
 
 func main() {
-	f, err := os.Open("./input.txt")
-	if err != nil {
-		log.Fatalf("can not open ./input.txt")
-		return
-	}
-	defer f.Close()
-	sc := bufio.NewScanner(f)
+	sc, closeFile := common.FileScanner("./day3/input.txt")
+	defer closeFile()
 	var (
 		totalPart1, totalPart2 int
 		lines                  []string

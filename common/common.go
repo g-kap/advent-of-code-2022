@@ -5,8 +5,8 @@ import (
 	"os"
 )
 
-func ScanFile(path string) (*bufio.Scanner, func()) {
-	f, err := os.Open("path")
+func FileScanner(path string) (*bufio.Scanner, func()) {
+	f, err := os.Open(path)
 	if err != nil {
 		panic("can not open file")
 	}
