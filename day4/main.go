@@ -12,6 +12,16 @@ type section struct {
 	start, end int
 }
 
+type bitMaskType uint64
+
+func (s section) toBitMask() bitMaskType {
+	var x bitMaskType
+	for i := s.start - 1; i < +s.end; i++ {
+		x |= 1 << i
+	}
+	return x
+}
+
 func parseLine(line string) [2]section {
 	var (
 		result [2]section
@@ -44,10 +54,13 @@ func isOverlap(s1, s2 section) bool {
 }
 
 func main() {
-	sc, closeFile := common.FileScanner("./day4/input.txt")
+	sc, closeFile := common.FileScanner("./day4/input.example.txt")
 	defer closeFile()
 
-	var cnt1, cnt2 int
+	var (
+		cnt1, cnt2     int
+		bmCnt1, bmCnt2 int
+	)
 	for sc.Scan() {
 		line := sc.Text()
 		pair := parseLine(line)
@@ -57,6 +70,16 @@ func main() {
 		if isOverlap(pair[0], pair[1]) || isOverlap(pair[1], pair[0]) {
 			cnt2++
 		}
+		{
+			bm1 := pair[0].toBitMask()
+			bm2 := pair[1].toBitMask()
+			if bm1|bm2 == bm1 || bm2|bm1 == bm2 {
+				bmCnt1++
+			}
+			if bm1&bm2 != 0 {
+				bmCnt2++
+			}
+		}
 	}
-	fmt.Println(cnt1, cnt2)
+	fmt.Println(cnt1, cnt2, bmCnt1, bmCnt2)
 }
