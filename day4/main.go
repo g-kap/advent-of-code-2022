@@ -16,7 +16,7 @@ type bitMaskType uint64
 
 func (s section) toBitMask() bitMaskType {
 	var x bitMaskType
-	for i := s.start - 1; i < +s.end; i++ {
+	for i := s.start - 1; i < s.end; i++ {
 		x |= 1 << i
 	}
 	return x
