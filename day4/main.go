@@ -39,17 +39,24 @@ func isSubSecion(s1, s2 section) bool {
 	return s1.start <= s2.start && s1.end >= s2.end
 }
 
+func isOverlap(s1, s2 section) bool {
+	return s1.start <= s2.start && s1.end >= s2.start
+}
+
 func main() {
 	sc, closeFile := common.FileScanner("./day4/input.txt")
 	defer closeFile()
 
-	var cnt int
+	var cnt1, cnt2 int
 	for sc.Scan() {
 		line := sc.Text()
 		pair := parseLine(line)
 		if isSubSecion(pair[0], pair[1]) || isSubSecion(pair[1], pair[0]) {
-			cnt++
+			cnt1++
+		}
+		if isOverlap(pair[0], pair[1]) || isOverlap(pair[1], pair[0]) {
+			cnt2++
 		}
 	}
-	fmt.Println(cnt)
+	fmt.Println(cnt1, cnt2)
 }
