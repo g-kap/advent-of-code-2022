@@ -65,7 +65,7 @@ func parseTurn(line string) turn {
 	return t
 }
 
-func makeTurn(stacks []stack, t turn) {
+func makeTurn(stacks []stack, t turn, part2 bool) {
 	count := t.count
 	if len(stacks[t.from]) < count {
 		count = len(stacks[t.from])
@@ -73,16 +73,14 @@ func makeTurn(stacks []stack, t turn) {
 	if count == 0 {
 		return
 	}
-	for i := 0; i < count; i++ {
-		stacks[t.to] = append(stacks[t.to], stacks[t.from][len(stacks[t.from])-1-i])
+	if part2 {
+		stacks[t.to] = append(stacks[t.to], stacks[t.from][len(stacks[t.from])-count:]...)
+	} else {
+		for i := 0; i < count; i++ {
+			stacks[t.to] = append(stacks[t.to], stacks[t.from][len(stacks[t.from])-1-i])
+		}
 	}
 	stacks[t.from] = stacks[t.from][:len(stacks[t.from])-count]
-}
-
-func printStacks(stacks []stack) {
-	for i, s := range stacks {
-		fmt.Println(i+1, string(s))
-	}
 }
 
 func main() {
@@ -113,12 +111,9 @@ func main() {
 	trimStacks(stacks)
 	for sc.Scan() {
 		lineIdx++
-		fmt.Println(sc.Text())
 		t := parseTurn(sc.Text())
-		makeTurn(stacks, t)
+		makeTurn(stacks, t, true)
 		trimStacks(stacks)
-		printStacks(stacks)
-		println()
 	}
 	for _, s := range stacks {
 		fmt.Print(string(s[len(s)-1]))
