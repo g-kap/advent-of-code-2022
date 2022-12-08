@@ -25,10 +25,10 @@ func processTrees(m TreeMatrix) {
 				isTallest(tree, up) || isTallest(tree, down) {
 				cnt++
 			}
-			score := distance(tree, up, true) *
-				distance(tree, down, false) *
-				distance(tree, right, false) *
-				distance(tree, left, true)
+			score := distance(tree, up) *
+				distance(tree, down) *
+				distance(tree, right) *
+				distance(tree, left)
 			if score > maxScore {
 				maxScore = score
 			}
@@ -48,21 +48,12 @@ func isTallest(tree byte, line []byte) bool {
 	return true
 }
 
-func distance(tree byte, line []byte, opposite bool) int {
+func distance(tree byte, line []byte) int {
 	var dist int
-	if opposite {
-		for i := len(line) - 1; i >= 0; i-- {
-			dist++
-			if line[i] >= tree {
-				break
-			}
-		}
-	} else {
-		for i := 0; i < len(line); i++ {
-			dist++
-			if line[i] >= tree {
-				break
-			}
+	for _, t := range line {
+		dist++
+		if t >= tree {
+			break
 		}
 	}
 	return dist
@@ -71,20 +62,25 @@ func distance(tree byte, line []byte, opposite bool) int {
 type TreeMatrix [][]byte
 
 func (m TreeMatrix) left(i, j int) []byte {
-	return m[i][0:j]
+	s := make([]byte, 0, j)
+	for idx := j - 1; idx >= 0; idx-- {
+		s = append(s, m[i][idx])
+	}
+	return s
+}
+
+func (m TreeMatrix) up(i, j int) []byte {
+	s := make([]byte, 0, i)
+	for idx := i - 1; idx >= 0; idx-- {
+		s = append(s, m[idx][j])
+	}
+	return s
 }
 
 func (m TreeMatrix) right(i, j int) []byte {
 	return m[i][j+1:]
 }
 
-func (m TreeMatrix) up(i, j int) []byte {
-	s := make([]byte, i)
-	for idx := 0; idx < i; idx++ {
-		s[idx] = m[idx][j]
-	}
-	return s
-}
 func (m TreeMatrix) down(i, j int) []byte {
 	s := make([]byte, len(m)-i-1)
 	for idx := i + 1; idx < len(m); idx++ {
@@ -96,9 +92,7 @@ func (m TreeMatrix) down(i, j int) []byte {
 func main() {
 	sc, closeFile := common.FileScanner("./day8/input.txt")
 	defer closeFile()
-	var (
-		treesMatrix TreeMatrix
-	)
+	var treesMatrix TreeMatrix
 	for sc.Scan() {
 		treesMatrix = append(treesMatrix, toNumbers(sc.Bytes()))
 	}
