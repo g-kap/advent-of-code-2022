@@ -20,7 +20,7 @@ func FileScanner(path string) (*bufio.Scanner, func()) {
 }
 
 type Comparable interface {
-	rune | byte | int
+	rune | byte | int | float64 | float32
 }
 
 type Sortable[T Comparable] []T
@@ -35,4 +35,12 @@ func (s Sortable[T]) Swap(i, j int) {
 
 func (s Sortable[T]) Len() int {
 	return len(s)
+}
+
+func Abs[T Comparable](a T) T {
+	if a >= 0 {
+		return a
+	} else {
+		return -a
+	}
 }
