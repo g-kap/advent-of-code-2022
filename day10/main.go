@@ -40,17 +40,6 @@ func parseOp(s string) Op {
 	}
 }
 
-func (op Op) String() string {
-	switch op.Type {
-	case opNoop:
-		return "noop"
-	case opAddX:
-		return "addx " + strconv.Itoa(int(op.Arg))
-	default:
-		panic("bad op")
-	}
-}
-
 type CPU struct {
 	regX     int64
 	pipeline chan Op
