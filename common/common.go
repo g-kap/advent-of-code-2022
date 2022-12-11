@@ -39,6 +39,20 @@ func (s Sortable[T]) Len() int {
 	return len(s)
 }
 
+type ReverseSortable[T Comparable] []T
+
+func (s ReverseSortable[T]) Less(i, j int) bool {
+	return s[i] > s[j]
+}
+
+func (s ReverseSortable[T]) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s ReverseSortable[T]) Len() int {
+	return len(s)
+}
+
 func Abs[T Comparable](a T) T {
 	if a >= 0 {
 		return a
