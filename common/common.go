@@ -3,6 +3,8 @@ package common
 import (
 	"bufio"
 	"os"
+	"strconv"
+	"strings"
 )
 
 func FileScanner(path string) (*bufio.Scanner, func()) {
@@ -20,7 +22,7 @@ func FileScanner(path string) (*bufio.Scanner, func()) {
 }
 
 type Comparable interface {
-	rune | byte | int | float64 | float32
+	rune | byte | int | float64 | float32 | int64
 }
 
 type Sortable[T Comparable] []T
@@ -43,4 +45,25 @@ func Abs[T Comparable](a T) T {
 	} else {
 		return -a
 	}
+}
+
+func ParseArray[T any](s string, sep string, f func(string) (T, error)) []T {
+	items := strings.Split(s, sep)
+	result := make([]T, len(items))
+	var err error
+	for i := range items {
+		result[i], err = f(strings.TrimSpace(items[i]))
+		if err != nil {
+			panic(err.Error())
+		}
+	}
+	return result
+}
+
+func ParseInt(s string) uint64 {
+	num, err := strconv.ParseInt(strings.TrimSpace(s), 10, 64)
+	if err != nil {
+		panic("can not parse " + s + ": " + err.Error())
+	}
+	return uint64(num)
 }
