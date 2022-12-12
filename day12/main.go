@@ -49,38 +49,38 @@ func (m Map) initNeighbors() {
 
 type Path []*Pos
 
-func (p *Pos) findAllPathes(m Map, dest *Pos) []Path {
-	var allPathes []Path
-	walkRecursive(m, &allPathes, nil, p, dest)
-	return allPathes
-}
-
-func walkRecursive(
-	m Map,
-	pathes *[]Path, path Path, start, dest *Pos,
-) {
-	path = append(path, start)
-	for _, neighbor := range start.Neighbors {
-		var visited bool
-		for _, pos := range path {
-			if neighbor == pos {
-				visited = true
-				break
-			}
+func (m Map) resetScores() {
+	for i := 0; i < len(m); i++ {
+		for j := 0; j < len(m[i]); j++ {
+			m[i][j].Score = -1
 		}
-		if visited {
+	}
+}
+func (m Map) setBFSScores(from, to *Pos) {
+	from.Score = 0
+	path := Path{from}
+	visited := map[*Pos]bool{}
+	var curPos *Pos
+	for len(path) > 0 {
+		curPos, path = path[0], path[1:]
+		if visited[curPos] {
 			continue
 		}
-		if neighbor == dest {
-			*pathes = append(*pathes, path)
+		visited[curPos] = true
+		if curPos == to {
 			return
 		}
-		walkRecursive(m, pathes, path, neighbor, dest)
+		for _, neighbor := range curPos.Neighbors {
+			if !visited[neighbor] {
+				neighbor.Score = curPos.Score + 1
+				path = append(path, neighbor)
+			}
+		}
 	}
 }
 
 func main() {
-	sc, closeFile := common.FileScanner("./day12/input.example.txt")
+	sc, closeFile := common.FileScanner("./day12/input.txt")
 	defer closeFile()
 	var (
 		m                 Map
@@ -107,32 +107,26 @@ func main() {
 			}
 		}
 	}
+
 	m.initNeighbors()
-	pathes := startPos.findAllPathes(m, destPos)
-	var smallestIdx int
-	for i := range pathes {
-		if len(pathes[i]) < len(pathes[smallestIdx]) {
-			smallestIdx = i
-		}
-	}
+	m.setBFSScores(startPos, destPos)
+	fmt.Println(destPos.Score)
 
-	printPath(m, pathes[smallestIdx])
-	fmt.Println(len(pathes[smallestIdx]))
-}
-
-func printPath(m Map, path Path) {
-	fmt.Println("================================================")
+	min := destPos.Score
 	for i := 0; i < len(m); i++ {
 		for j := 0; j < len(m[i]); j++ {
-			s := "  . "
-			for x, p := range path {
-				if p.X == j && p.Y == i {
-					s = fmt.Sprintf("%2d%c ", x, m[i][j].Att)
+			if m[i][j].Att == int('a') {
+				startPos = m[i][j]
+				m.resetScores()
+				m.setBFSScores(startPos, destPos)
+				if destPos.Score < min && destPos.Score != -1 {
+					min = destPos.Score
 				}
 			}
-			fmt.Print(s, " ")
 		}
-		fmt.Println()
 	}
-	fmt.Println("================================================")
+	fmt.Println(min)
 }
+
+//484
+//478
