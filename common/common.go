@@ -81,3 +81,11 @@ func ParseInt(s string) uint64 {
 	}
 	return uint64(num)
 }
+
+func Keys[K comparable, V any](m map[K]V) []K {
+	var res []K
+	for k := range m {
+		res = append(res, k)
+	}
+	return res
+}
