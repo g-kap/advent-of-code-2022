@@ -96,8 +96,8 @@ func main() {
 	plainList = append(plainList, divider2, divider6)
 	sort.Sort(common.Sortable2[Record](plainList))
 
-	resolvePart1(pairs)
-	resolvePart2(plainList)
+	resolvePart1(pairs)     // 5330
+	resolvePart2(plainList) // 27648
 }
 
 func resolvePart1(pairs []Pair) {
