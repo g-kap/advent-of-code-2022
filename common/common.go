@@ -21,11 +21,11 @@ func FileScanner(path string) (*bufio.Scanner, func()) {
 	}
 }
 
-type Comparable interface {
+type ComparableBase interface {
 	rune | byte | int | float64 | float32 | int64
 }
 
-type Sortable[T Comparable] []T
+type Sortable[T ComparableBase] []T
 
 func (s Sortable[T]) Less(i, j int) bool {
 	return s[i] < s[j]
@@ -39,7 +39,25 @@ func (s Sortable[T]) Len() int {
 	return len(s)
 }
 
-type ReverseSortable[T Comparable] []T
+type Comparable[T any] interface {
+	Cmp(other T) int
+}
+
+type Sortable2[T Comparable[T]] []T
+
+func (s Sortable2[T]) Less(i, j int) bool {
+	return s[i].Cmp(s[j]) < 0
+}
+
+func (s Sortable2[T]) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s Sortable2[T]) Len() int {
+	return len(s)
+}
+
+type ReverseSortable[T ComparableBase] []T
 
 func (s ReverseSortable[T]) Less(i, j int) bool {
 	return s[i] > s[j]
@@ -53,7 +71,7 @@ func (s ReverseSortable[T]) Len() int {
 	return len(s)
 }
 
-func Abs[T Comparable](a T) T {
+func Abs[T ComparableBase](a T) T {
 	if a >= 0 {
 		return a
 	} else {
