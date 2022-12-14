@@ -45,30 +45,20 @@ func parsePath(line string) Path {
 }
 
 func findMinMax(pathes []Path) (Coord, Coord) {
-	min := pathes[0][0].From
 	max := pathes[0][0].From
-
 	for _, p := range pathes {
 		for _, c := range p {
 			for _, coord := range []Coord{c.From, c.To} {
-				if coord.Y < min.Y {
-					min.Y = coord.Y
-				} else if coord.Y > max.Y {
+				if coord.Y > max.Y {
 					max.Y = coord.Y
 				}
-				if coord.X < min.X {
-					min.X = coord.X
-				} else if coord.X > max.X {
+				if coord.X > max.X {
 					max.X = coord.X
 				}
 			}
 		}
 	}
-	min.Y = 0
-	min.X--
-	max.X += 50
-	max.Y++
-	return min, max
+	return Coord{Y: 0, X: 0}, Coord{Y: max.Y + 1, X: max.X + 500}
 }
 
 type Substance byte
@@ -77,12 +67,11 @@ const (
 	stone = Substance('#')
 	air   = Substance('.')
 	sand  = Substance('o')
-	track = Substance('~')
 )
 
 func (s Substance) Passable() bool {
 	switch s {
-	case air, track:
+	case air:
 		return true
 	case sand, stone:
 		return false
@@ -95,11 +84,19 @@ type Space struct {
 	space    [][]Substance
 }
 
-func makeSpace(min, max Coord) Space {
+func makeSpace(min, max Coord, withFloor bool) Space {
 	m := make([][]Substance, max.Y-min.Y)
 	for i := range m {
 		m[i] = make([]Substance, max.X-min.X)
 		common.FillSlice(m[i], '.')
+	}
+	if withFloor {
+		line1 := make([]Substance, max.X-min.X)
+		line2 := make([]Substance, max.X-min.X)
+		common.FillSlice(line1, air)
+		common.FillSlice(line2, stone)
+		m = append(m, line1, line2)
+		max.Y += 2
 	}
 	return Space{
 		min:   min,
@@ -154,14 +151,11 @@ var sandStartPoint = Coord{
 	X: 500,
 }
 
-func (s Space) FallSand(withTrack bool) bool {
+func (s Space) FallSand() bool {
 	pos := sandStartPoint
 	for {
 		if pos.Y+1 >= s.max.Y {
 			return false
-		}
-		if withTrack {
-			s.set(pos.Y, pos.X, track)
 		}
 		if !s.get(pos.Y+1, pos.X).Passable() {
 			if s.get(pos.Y+1, pos.X-1).Passable() {
@@ -170,7 +164,7 @@ func (s Space) FallSand(withTrack bool) bool {
 				pos.X++
 			} else {
 				s.set(pos.Y, pos.X, sand)
-				return true
+				return pos != sandStartPoint
 			}
 		}
 		pos.Y++
@@ -182,35 +176,27 @@ func main() {
 	defer closeFile()
 	var (
 		stonesPathes []Path
+		i            int
 	)
 	for sc.Scan() {
 		stonesPathes = append(stonesPathes, parsePath(sc.Text()))
 	}
 	min, max := findMinMax(stonesPathes)
-	space := makeSpace(min, max)
+	// part 1
+	space := makeSpace(min, max, false)
 	space.FillStones(stonesPathes)
-	var i int
-	for i = 0; space.FallSand(false); i++ {
-	}
-	space.FallSand(true)
-	printSpace(space)
-	fmt.Println(i)
-}
 
-func printSpace(s Space) {
-	ws := ""
-	for line := 0; line < 3; line++ {
-		fmt.Print("    |")
-		for i := s.min.X; i < s.max.X; i++ {
-			fmt.Print(string(fmt.Sprintf("%3d", i)[line]) + ws)
-		}
-		fmt.Println()
+	for i = 0; space.FallSand(); i++ {
 	}
-	for i := 0; i < len(s.space); i++ {
-		fmt.Printf("%3d |", i)
-		for j := 0; j < len(s.space[i]); j++ {
-			fmt.Printf(string(s.space[i][j]) + ws)
-		}
-		fmt.Println()
+	fmt.Println(i)
+
+	// part 2
+	space = makeSpace(min, max, true)
+	space.FillStones(stonesPathes)
+	for i = 0; space.FallSand(); i++ {
 	}
+	fmt.Println(i + 1)
+
+	// 1016
+	// 25402
 }
