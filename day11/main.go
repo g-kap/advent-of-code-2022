@@ -81,7 +81,7 @@ func main() {
 			monkeys = append(monkeys, Monkey{})
 			monkeyIdx++
 		} else if strings.HasPrefix(line, startingItemsPrefix) {
-			monkeys[monkeyIdx].startingItems = common.ParseArray[WorryLevel](strings.TrimPrefix(line, startingItemsPrefix), ",",
+			monkeys[monkeyIdx].startingItems = common.ParseSlice[WorryLevel](strings.TrimPrefix(line, startingItemsPrefix), ",",
 				func(s string) (WorryLevel, error) { a, _ := strconv.ParseInt(s, 10, 64); return WorryLevel(a), nil })
 		} else if strings.HasPrefix(line, operationPrefix) {
 			monkeys[monkeyIdx].operation = parseOp(line)

@@ -79,7 +79,7 @@ func Abs[T ComparableBase](a T) T {
 	}
 }
 
-func ParseArray[T any](s string, sep string, f func(string) (T, error)) []T {
+func ParseSlice[T any](s string, sep string, f func(string) (T, error)) []T {
 	items := strings.Split(s, sep)
 	result := make([]T, len(items))
 	var err error
@@ -106,4 +106,10 @@ func Keys[K comparable, V any](m map[K]V) []K {
 		res = append(res, k)
 	}
 	return res
+}
+
+func FillSlice[T any](s []T, el T) {
+	for i := 0; i < len(s); i++ {
+		s[i] = el
+	}
 }
