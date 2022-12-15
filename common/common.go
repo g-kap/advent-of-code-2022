@@ -92,12 +92,12 @@ func ParseSlice[T any](s string, sep string, f func(string) (T, error)) []T {
 	return result
 }
 
-func ParseInt(s string) uint64 {
+func ParseInt[T int | uint64 | int64 | int32 | uint32 | uint8 | uint16](s string) T {
 	num, err := strconv.ParseInt(strings.TrimSpace(s), 10, 64)
 	if err != nil {
 		panic("can not parse " + s + ": " + err.Error())
 	}
-	return uint64(num)
+	return T(num)
 }
 
 func Keys[K comparable, V any](m map[K]V) []K {
