@@ -92,7 +92,7 @@ func makeOpenAirCubes(lavaCubes []Cube) common.Set[Cube] {
 	return airCubeSet
 }
 
-func countOpenSides(cubes []Cube) int {
+func resolvePart1(cubes []Cube) int {
 	neighbors := map[Cube][]Cube{}
 	for _, c1 := range cubes {
 		for _, c2 := range cubes {
@@ -111,6 +111,20 @@ func countOpenSides(cubes []Cube) int {
 	return cnt
 }
 
+func resolvePart2(lavaCubes []Cube) int {
+	openAirCubes := makeOpenAirCubes(lavaCubes)
+	totalSides := 0
+	for _, c := range lavaCubes {
+		totalSides += 6
+		for _, neighbor := range makeNeighbors(c) {
+			if !openAirCubes.Contains(neighbor) {
+				totalSides--
+			}
+		}
+	}
+	return totalSides
+}
+
 func main() {
 	sc, closeFile := common.FileScanner("./day18/input.txt")
 	defer closeFile()
@@ -124,17 +138,6 @@ func main() {
 		}
 		lavaCubes = append(lavaCubes, Cube{coord[0], coord[1], coord[2]})
 	}
-	fmt.Println(countOpenSides(lavaCubes))
-
-	openAirCubes := makeOpenAirCubes(lavaCubes)
-	totalSides := 0
-	for _, c := range lavaCubes {
-		totalSides += 6
-		for _, neighbor := range makeNeighbors(c) {
-			if !openAirCubes.Contains(neighbor) {
-				totalSides--
-			}
-		}
-	}
-	fmt.Println(totalSides)
+	fmt.Println(resolvePart1(lavaCubes))
+	fmt.Println(resolvePart2(lavaCubes))
 }
