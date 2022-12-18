@@ -110,27 +110,27 @@ func parseValve(vm ValveMap, line string) {
 
 const minutesLimit = 30
 
-func buildTurns(m ValveMap, from *Valve) []Steps {
-	allClosedValves := []*Valve{}
-	for _, v := range m {
-		if !v.IsOpen && v.FlowRate > 0 {
-			allClosedValves = append(allClosedValves, v)
-		}
-	}
-	var availablePathes [][]*Valve
-	for _, p := range common.Permutations(allClosedValves) {
-		for _, v := range from.LeadsTo {
-			if v == p[0] {
-				availablePathes = append(availablePathes, p)
-				break
+func buildTurns(m ValveMap, from *Valve) <-chan Steps {
+	ch := make(chan Steps)
+	go func() {
+		defer close(ch)
+
+		allClosedValves := []*Valve{}
+		for _, v := range m {
+			if !v.IsOpen && v.FlowRate > 0 {
+				allClosedValves = append(allClosedValves, v)
 			}
 		}
-	}
-	var turns []Steps
-	for _, p := range availablePathes {
-		turns = append(turns, buildSteps(p))
-	}
-	return turns
+		for p := range common.PermutationsToChan(allClosedValves) {
+			for _, v := range from.LeadsTo {
+				if v == p[0] {
+					ch <- buildSteps(p)
+					break
+				}
+			}
+		}
+	}()
+	return ch
 }
 
 func buildSteps(p []*Valve) Steps {
@@ -166,13 +166,15 @@ func simulateTurn(m ValveMap, steps Steps) int {
 
 func simulate(m ValveMap, start *Valve) {
 	bestScore := 0
-	for _, turn := range append(buildTurns(m, start)) {
+	for turn := range buildTurns(m, start) {
 		m.Reset()
 		score := simulateTurn(m, turn)
+		fmt.Println(score)
 		if score > bestScore {
 			bestScore = score
 		}
 	}
+	fmt.Println("===")
 	fmt.Println(bestScore)
 }
 

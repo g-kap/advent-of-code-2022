@@ -178,3 +178,34 @@ func Permutations[T comparable](arr []T) [][]T {
 	perm(arr, len(arr))
 	return res
 }
+
+func PermutationsToChan[T comparable](arr []T) <-chan []T {
+
+	ch := make(chan []T, 1)
+	var perm func([]T, int)
+	perm = func(arr []T, n int) {
+		if n == 1 {
+			tmp := make([]T, len(arr))
+			copy(tmp, arr)
+			ch <- tmp
+		} else {
+			for i := 0; i < n; i++ {
+				perm(arr, n-1)
+				if n%2 == 1 {
+					tmp := arr[i]
+					arr[i] = arr[n-1]
+					arr[n-1] = tmp
+				} else {
+					tmp := arr[0]
+					arr[0] = arr[n-1]
+					arr[n-1] = tmp
+				}
+			}
+		}
+	}
+	go func() {
+		perm(arr, len(arr))
+		close(ch)
+	}()
+	return ch
+}
