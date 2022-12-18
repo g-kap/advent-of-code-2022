@@ -209,3 +209,22 @@ func PermutationsToChan[T comparable](arr []T) <-chan []T {
 	}()
 	return ch
 }
+
+type Set[T comparable] map[T]bool
+
+func (s Set[T]) Contains(v T) bool {
+	_, ok := s[v]
+	return ok
+}
+
+func (s Set[T]) Add(v T) {
+	s[v] = true
+}
+
+func MakeSet[T comparable](s []T) Set[T] {
+	res := map[T]bool{}
+	for _, v := range s {
+		res[v] = true
+	}
+	return res
+}
