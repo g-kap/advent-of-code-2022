@@ -228,3 +228,16 @@ func MakeSet[T comparable](s []T) Set[T] {
 	}
 	return res
 }
+
+func Max[T ComparableBase](s ...T) T {
+	if len(s) == 0 {
+		panic("empty slice")
+	}
+	max := s[0]
+	for i := 1; i < len(s); i++ {
+		if s[i] > max {
+			max = s[i]
+		}
+	}
+	return max
+}
