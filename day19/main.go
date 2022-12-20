@@ -88,15 +88,45 @@ func (rr ResourceRecord) Sub(rr2 ResourceRecord) ResourceRecord {
 	return rr.add(rr2, -1)
 }
 
-func getBestGeodeAmount(bp Blueprint, resources, robots ResourceRecord, minute int) int {
+type cacheRecord struct {
+	bpId              int
+	resources, robots ResourceRecord
+	minute            int
+}
+
+var cache = map[cacheRecord]int{}
+
+func setCache(bpId int, resources, robots ResourceRecord, minute int, result int) {
+	cache[cacheRecord{
+		bpId:      bpId,
+		resources: resources,
+		robots:    robots,
+		minute:    minute,
+	}] = result
+}
+
+func getCache(bpId int, resources, robots ResourceRecord, minute int) (int, bool) {
+	r, ok := cache[cacheRecord{
+		bpId:      bpId,
+		resources: resources,
+		robots:    robots,
+		minute:    minute,
+	}]
+	return r, ok
+}
+
+func getBestGeodeAmount(bpId int, bp Blueprint, resources, robots ResourceRecord, minute int) int {
 	if minute > maxTime {
 		return resources.Geode
+	}
+	if cachedResult, ok := getCache(bpId, resources, robots, minute); ok {
+		return cachedResult
 	}
 	var results []int
 
 	for _, r := range []RobotKind{GeodeRobot, ObsidianRobot, ClayRobot, OreRobot} {
 		if resources.HasEnoughForBuild(bp, r) {
-			results = append(results, getBestGeodeAmount(bp,
+			results = append(results, getBestGeodeAmount(bpId, bp,
 				resources.Sub(bp[r].RR()).Add(robots),
 				robots.Add(r.RR()),
 				minute+1,
@@ -106,13 +136,14 @@ func getBestGeodeAmount(bp Blueprint, resources, robots ResourceRecord, minute i
 			}
 		}
 	}
-	results = append(results, getBestGeodeAmount(bp,
+	results = append(results, getBestGeodeAmount(bpId, bp,
 		resources.Add(robots),
 		robots,
 		minute+1,
 	))
-
-	return common.Max(results...)
+	maxRes := common.Max(results...)
+	setCache(bpId, resources, robots, minute, maxRes)
+	return maxRes
 }
 
 func main() {
@@ -140,10 +171,11 @@ func main() {
 
 	sum := 0
 	for i, bp := range blueprints {
-		maxGeodCount := getBestGeodeAmount(bp, startResources, startRobots, 1)
+		maxGeodCount := getBestGeodeAmount(i, bp, startResources, startRobots, 1)
 		qualityLevel := (i + 1) * maxGeodCount
 		fmt.Println(i+1, maxGeodCount, qualityLevel)
 		sum += qualityLevel
+		cache = map[cacheRecord]int{}
 	}
 	fmt.Println(sum)
 }
