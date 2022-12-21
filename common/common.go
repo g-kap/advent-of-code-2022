@@ -241,3 +241,16 @@ func Max[T ComparableBase](s ...T) T {
 	}
 	return max
 }
+
+func Min[T ComparableBase](s ...T) T {
+	if len(s) == 0 {
+		panic("empty slice")
+	}
+	min := s[0]
+	for i := 1; i < len(s); i++ {
+		if s[i] < min {
+			min = s[i]
+		}
+	}
+	return min
+}

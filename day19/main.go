@@ -35,8 +35,6 @@ func (r RobotKind) RR() ResourceRecord {
 
 type Blueprint map[RobotKind]ResourceRecord
 
-const maxTime = 24
-
 type ResourceRecord struct {
 	Ore, Clay, Obsidian, Geode int
 }
@@ -68,6 +66,21 @@ func (rr ResourceRecord) Sub(rr2 ResourceRecord) ResourceRecord {
 	return rr.add(rr2, -1)
 }
 
+func (rr ResourceRecord) Robots(kind RobotKind) int {
+	switch kind {
+	case OreRobot:
+		return rr.Ore
+	case ClayRobot:
+		return rr.Clay
+	case GeodeRobot:
+		return rr.Geode
+	case ObsidianRobot:
+		return rr.Obsidian
+	default:
+		panic("bad robot")
+	}
+}
+
 type cacheRecord struct {
 	bpId              int
 	resources, robots ResourceRecord
@@ -95,11 +108,11 @@ func getCache(bpId int, resources, robots ResourceRecord, minute int) (int, bool
 	return r, ok
 }
 
-func getBestGeodeAmount(bpId int, bp Blueprint, resources, robots ResourceRecord, minute int) int {
-	if minute > maxTime {
+func getBestGeodeAmount(bpId int, bp Blueprint, resources, robots ResourceRecord, minutesLeft int) int {
+	if minutesLeft <= 0 {
 		return resources.Geode
 	}
-	if cachedResult, ok := getCache(bpId, resources, robots, minute); ok {
+	if cachedResult, ok := getCache(bpId, resources, robots, minutesLeft); ok {
 		return cachedResult
 	}
 	var results []int
@@ -109,7 +122,7 @@ func getBestGeodeAmount(bpId int, bp Blueprint, resources, robots ResourceRecord
 			results = append(results, getBestGeodeAmount(bpId, bp,
 				resources.Sub(bp[r]).Add(robots),
 				robots.Add(r.RR()),
-				minute+1,
+				minutesLeft-1,
 			))
 			if r == GeodeRobot {
 				break
@@ -119,10 +132,10 @@ func getBestGeodeAmount(bpId int, bp Blueprint, resources, robots ResourceRecord
 	results = append(results, getBestGeodeAmount(bpId, bp,
 		resources.Add(robots),
 		robots,
-		minute+1,
+		minutesLeft-1,
 	))
 	maxRes := common.Max(results...)
-	setCache(bpId, resources, robots, minute, maxRes)
+	setCache(bpId, resources, robots, minutesLeft, maxRes)
 	return maxRes
 }
 
@@ -151,10 +164,18 @@ func main() {
 
 	sum := 0
 	for i, bp := range blueprints {
-		maxGeodCount := getBestGeodeAmount(i, bp, startResources, startRobots, 1)
+		maxGeodCount := getBestGeodeAmount(i, bp, startResources, startRobots, 24)
 		qualityLevel := (i + 1) * maxGeodCount
 		sum += qualityLevel
 		cache = map[cacheRecord]int{}
 	}
 	fmt.Println(sum)
+
+	mul := 0
+	for i, bp := range blueprints[:common.Min(3, len(blueprints))] {
+		maxGeodCount := getBestGeodeAmount(i, bp, startResources, startRobots, 32)
+		mul *= maxGeodCount
+		cache = map[cacheRecord]int{}
+	}
+	fmt.Println(mul)
 }
