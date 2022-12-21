@@ -7,14 +7,27 @@ import (
 	"github.com/g-kap/advent-of-code-2022/common"
 )
 
-type RobotKind int8
+type Resources map[ResType]int
+
+func (r Resources) RR() ResourceRecord {
+	return ResourceRecord{
+		Ore:      r[Ore],
+		Clay:     r[Clay],
+		Obsidian: r[Obsidian],
+		Geode:    r[Geode],
+	}
+}
+
+type ResType int8
 
 const (
-	OreRobot = RobotKind(iota)
-	ClayRobot
-	ObsidianRobot
-	GeodeRobot
+	Ore = ResType(iota)
+	Clay
+	Obsidian
+	Geode
 )
+
+type RobotKind ResType
 
 func (r RobotKind) RR() ResourceRecord {
 	rr := ResourceRecord{}
@@ -33,17 +46,24 @@ func (r RobotKind) RR() ResourceRecord {
 	return rr
 }
 
-type Blueprint map[RobotKind]ResourceRecord
+const (
+	OreRobot      = RobotKind(Ore)
+	ClayRobot     = RobotKind(Clay)
+	ObsidianRobot = RobotKind(Obsidian)
+	GeodeRobot    = RobotKind(Geode)
+)
+
+type Blueprint map[RobotKind]Resources
 
 type ResourceRecord struct {
 	Ore, Clay, Obsidian, Geode int
 }
 
-func (rr ResourceRecord) ContainsMoreThan(rr2 ResourceRecord) bool {
-	if rr.Ore >= rr2.Ore &&
-		rr.Geode >= rr2.Geode &&
-		rr.Clay >= rr2.Clay &&
-		rr.Obsidian >= rr2.Obsidian {
+func (rr ResourceRecord) HasEnoughForBuild(bp Blueprint, r RobotKind) bool {
+	if rr.Ore >= bp[r][Ore] &&
+		rr.Geode >= bp[r][Geode] &&
+		rr.Clay >= bp[r][Clay] &&
+		rr.Obsidian >= bp[r][Obsidian] {
 		return true
 	}
 	return false
@@ -118,9 +138,9 @@ func getBestGeodeAmount(bpId int, bp Blueprint, resources, robots ResourceRecord
 	var results []int
 
 	for _, r := range []RobotKind{GeodeRobot, ObsidianRobot, ClayRobot, OreRobot} {
-		if resources.ContainsMoreThan(bp[r]) {
+		if resources.HasEnoughForBuild(bp, r) {
 			results = append(results, getBestGeodeAmount(bpId, bp,
-				resources.Sub(bp[r]).Add(robots),
+				resources.Sub(bp[r].RR()).Add(robots),
 				robots.Add(r.RR()),
 				minutesLeft-1,
 			))
@@ -140,7 +160,7 @@ func getBestGeodeAmount(bpId int, bp Blueprint, resources, robots ResourceRecord
 }
 
 func main() {
-	sc, closeFile := common.FileScanner("./day19/input.example.txt")
+	sc, closeFile := common.FileScanner("./day19/input.txt")
 	defer closeFile()
 	var (
 		numRe = regexp.MustCompile(`\d+`)
@@ -155,10 +175,10 @@ func main() {
 			panic("bad line")
 		}
 		blueprints = append(blueprints, Blueprint{
-			OreRobot:      ResourceRecord{Ore: nums[1]},
-			ClayRobot:     ResourceRecord{Ore: nums[2]},
-			ObsidianRobot: ResourceRecord{Ore: nums[3], Clay: nums[4]},
-			GeodeRobot:    ResourceRecord{Ore: nums[5], Obsidian: nums[6]},
+			OreRobot:      Resources{Ore: nums[1]},
+			ClayRobot:     Resources{Ore: nums[2]},
+			ObsidianRobot: Resources{Ore: nums[3], Clay: nums[4]},
+			GeodeRobot:    Resources{Ore: nums[5], Obsidian: nums[6]},
 		})
 	}
 
@@ -166,6 +186,7 @@ func main() {
 	for i, bp := range blueprints {
 		maxGeodCount := getBestGeodeAmount(i, bp, startResources, startRobots, 24)
 		qualityLevel := (i + 1) * maxGeodCount
+		fmt.Println(i+1, maxGeodCount, qualityLevel)
 		sum += qualityLevel
 		cache = map[cacheRecord]int{}
 	}
