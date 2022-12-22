@@ -96,60 +96,20 @@ func makeLinedList(sc *bufio.Scanner, multiplier int) []*Node {
 	return nodes
 }
 
-func detectCycle(start *Node) (bool, []*Node) {
-	node := start
-	visited := common.Set[*Node]{}
-	path := []*Node{}
-	var idx int
-	var found bool
-	for {
-		path = append(path, node)
-		if node.next == start {
-			return false, nil
-		}
-		idx++
-		if visited.Contains(node.next) {
-			fmt.Println("cycle detected at node ")
-			found = true
-			break
-		}
-		visited.Add(node)
-		if node.next == node {
-			fmt.Println("cycle detected at node ")
-			return true, path
-		}
-		if node.prev == node {
-			fmt.Println("cycle detected at node ")
-			found = true
-			break
-		}
-		node = node.next
-	}
-	if !found {
-		return false, nil
-	}
-	var (
-		startIdx int
-		sn       *Node
-	)
-	for startIdx, sn = range path {
-		if sn == node.next {
-			break
-		}
-	}
-	return true, path[startIdx:]
-}
-
 func main() {
 	sc, closeFile := common.DayFileScanner(20, false)
 	defer closeFile()
+
+	//multiplier := 1
+	//mixTimes := 1
+	//
 	multiplier := 811589153
-	miaxTimes := 10
+	mixTimes := 10
 
 	nodes := makeLinedList(sc, multiplier)
 	var zeroNode *Node
 
-	for i := 0; i < miaxTimes; i++ {
+	for i := 0; i < mixTimes; i++ {
 		for _, node := range nodes {
 			if node.value == 0 {
 				zeroNode = node
