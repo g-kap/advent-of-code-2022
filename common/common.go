@@ -2,6 +2,9 @@ package common
 
 import (
 	"bufio"
+	"fmt"
+	"io"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -19,6 +22,21 @@ func FileScanner(path string) (*bufio.Scanner, func()) {
 			panic(err)
 		}
 	}
+}
+
+func init() {
+	log.SetFlags(0)
+}
+
+func DayFileScanner(dayNum int, example bool) (*bufio.Scanner, func()) {
+	suffix := ""
+	if example {
+		suffix = ".example"
+	} else {
+		log.SetOutput(io.Discard)
+	}
+	s := fmt.Sprintf("./day%2d/input%s.txt", dayNum, suffix)
+	return FileScanner(s)
 }
 
 type ComparableBase interface {
