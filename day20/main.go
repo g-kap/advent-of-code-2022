@@ -71,11 +71,11 @@ func (n *Node) ForwardSlice() []int {
 	}
 }
 
-func makeLinedList(sc *bufio.Scanner) []*Node {
+func makeLinedList(sc *bufio.Scanner, multiplier int) []*Node {
 	var nodes []*Node
 	sc.Scan()
 	length := 1
-	firstNode := &Node{value: common.ParseInt[int](sc.Text()), length: &length}
+	firstNode := &Node{value: common.ParseInt[int](sc.Text()) * multiplier, length: &length}
 	firstNode.next = firstNode
 	firstNode.prev = firstNode
 	lastNode := firstNode
@@ -83,7 +83,7 @@ func makeLinedList(sc *bufio.Scanner) []*Node {
 	for sc.Scan() {
 		length++
 		node := &Node{
-			value:  common.ParseInt[int](sc.Text()),
+			value:  common.ParseInt[int](sc.Text()) * multiplier,
 			prev:   lastNode,
 			length: &length,
 		}
@@ -143,14 +143,19 @@ func detectCycle(start *Node) (bool, []*Node) {
 func main() {
 	sc, closeFile := common.DayFileScanner(20, false)
 	defer closeFile()
-	nodes := makeLinedList(sc)
+	multiplier := 811589153
+	miaxTimes := 10
+
+	nodes := makeLinedList(sc, multiplier)
 	var zeroNode *Node
 
-	for _, node := range nodes {
-		if node.value == 0 {
-			zeroNode = node
+	for i := 0; i < miaxTimes; i++ {
+		for _, node := range nodes {
+			if node.value == 0 {
+				zeroNode = node
+			}
+			node.Mix()
 		}
-		node.Mix()
 	}
 
 	n := zeroNode
